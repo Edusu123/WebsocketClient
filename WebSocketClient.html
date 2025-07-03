@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebSocket JavaScript Client</title>
+  </head>
+
+  <body>
+    <h1>WebSocket JavaScript Client</h1>
+    <p id="stateLabel">Ready to connect</p>
+    <p id="connIdLabel">ConnId: N/a</p>
+
+    <div>
+      <label for="connectionUrl">WebSocket Server Url:</label>
+      <input id="connectionUrl" type="text">
+      <button id="connectButton" type="submit">Connect</button>
+      <button disabled id="closeButton">Close Socket</button>
+    </div>
+
+    <p></p>
+
+    <div>
+      <label for="sendMessage">Message:</label>
+      <input disabled id="sendMessage" type="text">
+      <button disabled id="sendButton" type="submit">Send</button>
+    </div>
+
+    <p></p>
+
+    <div>
+      <label for="recipients">Recipent Id:</label>
+      <input disabled id="recipients" type="text">
+    </div>
+
+    <p></p>
+
+    <h2>Communication Log</h2>
+    <table style="width: 800px;">
+      <thead>
+        <tr>
+          <td style="width: 100px;">From</td>
+          <td style="width: 100px;">To</td>
+          <td>Data</td>
+        </tr>
+      </thead>
+    </table>
+
+    <p></p>
+  </body>
+  <script>
+    var connectionUrl = document.getElementById('connectionUrl');
+    var connectButton = document.getElementById('connectButton');
+    var stateLabel = document.getElementById('stateLabel');
+    var sendMessage = document.getElementById('sendMessage');
+    var sendButton = document.getElementById('sendButton');
+    var commsLog = document.getElementById('commsLog');
+    var closeButton = document.getElementById('closeButton');
+    var recipients = document.getElementById('recipients');
+    var connId = document.getElementById('connIdLabel');
+
+    connectionUrl.value = 'ws://localhost:5000';
+
+    connectButton.onclick = function() {
+      stateLabel.innerHTML = 'Attempting to connect...';
+      socket = new WebSocket(connectionUrl.value);
+      
+      socket.onopen = function(event){
+        updateState();
+        commsLog.innerHTML = `<tr><td colspan="3">Connection Opened</td></tr>`;
+      };
+
+      socket.onclose = function(event){
+        updateState();
+        commsLog.innerHTML = `<tr><td colspan="3">Connection closed: ${htmlEscape(event.code)} 
+          Reason: ${htmlEscape(event.reason)}</td></tr>`;
+      }
+
+      socket.onerror = updateState();
+
+      socket.onmessage = function(event){
+        commsLog.innerHTML = `<tr>
+          <td>Server</td>
+          <td>Client</td>
+          <td>${htmlEscape(event.data)}</td></tr>`;
+      };
+    };
+
+    function htmlEscape(str){
+      return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/&/g, '&quot;')
+        .replace(/&/g, '&#39;')
+        .replace(/&/g, '&lt;')
+        .replace(/&/g, '&gt;');
+    }
+
+    function updateState(){
+      function disable(){
+        sendMessage.disable = true;
+        sendButton.disable = true;
+        closeButton.disable = true;
+        recipients.disable = true;
+      }
+
+      function enable(){
+        sendMessage.disable = false;
+        sendButton.disable = false;
+        closeButton.disable = false;
+        recipients.disable = false;
+      }
+
+      connectionUrl.disable = true;
+      connectButton.disable = true;
+
+      if (!socket){
+        disable();
+      }
+      else{
+        switch(socket.readyState){
+          case WebSocket.CLOSED:
+            stateLabel.innerHTML = 'Closed';
+            connId.innerHTML = 'ConnId: N/a';
+            
+            disable();
+
+            connectionUrl.disable = false;
+            connectButton.disable = false;
+            break;
+
+          case WebSocket.CLOSING:
+            stateLabel.innerHTML = 'Closing...';
+            disable();
+            break;
+
+          case WebSocket.OPEN:
+            stateLabel.innerHTML = 'Open';
+            enable();
+            break;
+          
+          default: 
+            stateLabel.innerHTML = `Unknown WebSocket State: ${socket.readyState}`;
+        }
+      }
+    }
+  </script>
+</html>
