@@ -44,6 +44,9 @@
           <td>Data</td>
         </tr>
       </thead>
+      <tbody id="commsLog">
+
+      </tbody>
     </table>
 
     <p></p>
@@ -59,7 +62,7 @@
     var recipients = document.getElementById('recipients');
     var connId = document.getElementById('connIdLabel');
 
-    connectionUrl.value = 'ws://localhost:5000';
+    connectionUrl.value = 'ws://localhost:5067';
 
     connectButton.onclick = function() {
       stateLabel.innerHTML = 'Attempting to connect...';
