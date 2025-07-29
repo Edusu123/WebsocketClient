@@ -79,13 +79,15 @@
           Reason: ${htmlEscape(event.reason)}</td></tr>`;
       };
 
-      socket.onerror = updateState();
+      socket.onerror = updateState;
 
       socket.onmessage = function (event) {
         commsLog.innerHTML = `<tr>
           <td>Server</td>
           <td>Client</td>
           <td>${htmlEscape(event.data)}</td></tr>`;
+
+        isConnID(event.data);
       };
     };
 
@@ -121,12 +123,18 @@
         .replace(/&/g, "&gt;");
     }
 
+    function isConnID(str) {
+      console.log(str);
+      if (str.substring(0, 7) == "ConnID:")
+        connId.innerHTML = "ConnID: " + str.substring(8, 45);
+    }
+
     function updateState() {
       function disable() {
-        sendMessage.disable = true;
-        sendButton.disable = true;
-        closeButton.disable = true;
-        recipients.disable = true;
+        sendMessage.disabled = true;
+        sendButton.disabled = true;
+        closeButton.disabled = true;
+        recipients.disabled = true;
       }
 
       function enable() {
@@ -136,8 +144,8 @@
         recipients.disabled = false;
       }
 
-      connectionUrl.disable = true;
-      connectButton.disable = true;
+      connectionUrl.disabled = true;
+      connectButton.disabled = true;
 
       if (!socket) {
         disable();
