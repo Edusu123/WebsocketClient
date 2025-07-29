@@ -73,7 +73,7 @@
 
       socket.onclose = function (event) {
         updateState();
-        commsLog.innerHTML = `<tr><td colspan="3">Connection closed: ${htmlEscape(
+        commsLog.innerHTML += `<tr><td colspan="3">Connection closed: ${htmlEscape(
           event.code
         )} 
           Reason: ${htmlEscape(event.reason)}</td></tr>`;
@@ -82,7 +82,7 @@
       socket.onerror = updateState;
 
       socket.onmessage = function (event) {
-        commsLog.innerHTML = `<tr>
+        commsLog.innerHTML += `<tr>
           <td>Server</td>
           <td>Client</td>
           <td>${htmlEscape(event.data)}</td></tr>`;
@@ -102,8 +102,10 @@
       if (!socket || socket.readyState !== WebSocket.OPEN) {
         alert("socket not connected");
       }
-      var data = sendMessage.value;
+
+      var data = constructJSONPayload();
       socket.send(data);
+
       commsLog.innerHTML +=
         "<tr>" +
         '<td class="commslog-client">Client</td>' +
@@ -127,6 +129,14 @@
       console.log(str);
       if (str.substring(0, 7) == "ConnID:")
         connId.innerHTML = "ConnID: " + str.substring(8, 45);
+    }
+
+    function constructJSONPayload() {
+      return JSON.stringify({
+        From: connId.innerHTML.substring(8, connId.innerHTML.length),
+        To: recipients.value,
+        Message: sendMessage.value,
+      });
     }
 
     function updateState() {
